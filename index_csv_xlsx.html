@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload CSV e XLSX</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { color: #333; }
+    input { margin-bottom: 10px; display: block; }
+    #fileList { margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Enviar CSV e XLSX</h1>
+
+  <form id="uploadForm">
+    <label>CSV:
+      <input type="file" id="csvFile" accept=".csv">
+    </label>
+    <label>XLSX:
+      <input type="file" id="xlsxFile" accept=".xlsx">
+    </label>
+    <button type="submit">Enviar</button>
+  </form>
+
+  <div id="fileList"></div>
+  <div id="response"></div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const fileList = document.getElementById('fileList');
+    const responseDiv = document.getElementById('response');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const csv = document.getElementById('csvFile').files[0];
+      const xlsx = document.getElementById('xlsxFile').files[0];
+
+      if (!csv || !xlsx) {
+        alert('Por favor, selecione ambos os arquivos.');
+        return;
+      }
+
+      fileList.innerHTML = `
+        <p>CSV selecionado: ${csv.name}</p>
+        <p>XLSX selecionado: ${xlsx.name}</p>
+      `;
+
+      // Cria o FormData para enviar os arquivos
+      const formData = new FormData();
+      formData.append('csv', csv);
+      formData.append('xlsx', xlsx);
+
+      try {
+        const res = await fetch('http://localhost:5678/webhook-test/compare-portalcsv-xlsx', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        responseDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (err) {
+        responseDiv.innerHTML = `<p style="color:red">Erro: ${err.message}</p>`;
+      }
+    });
+  </script>
+
+</body>
+</html>

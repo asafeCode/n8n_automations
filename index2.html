@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Upload XLSX para o n8n</h2>
+
+  <form
+    action="http://localhost:5678/webhook-test/rd-station"
+    method="post"
+    enctype="multipart/form-data"
+  >
+    <input type="file" name="data" accept=".xlsx,.xls" />
+    <button type="submit">Enviar</button>
+  </form>
+</body>
+</html>

@@ -1,0 +1,75 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "compare-xlsx",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {
+          "binaryData": true
+        }
+      },
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "binaryPropertyName": "sheetA"
+      },
+      "id": "Extract XLSX A",
+      "name": "Extract XLSX A",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 1,
+      "position": [450, 200]
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "binaryPropertyName": "sheetB"
+      },
+      "id": "Extract XLSX B",
+      "name": "Extract XLSX B",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 1,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "functionCode": "const sheetA = $items(\"Extract XLSX A\");\nconst sheetB = $items(\"Extract XLSX B\");\n\nconst fieldsToCompare = [\n  \"username\",\"email\",\"password\",\"firstname\",\"lastname\",\n  \"profile_field_cpf\",\"profile_field_telefone\",\"CEP\",\n  \"profile_field_mensalidades\",\n  ...Array.from({ length: 30 }, (_, i) => `profile_field_pagto${String(i + 1).padStart(2, '0')}`),\n  \"profile_field_ensinosuperior\",\n  \"profile_field_analisepessoal\",\n  \"profile_field_ta\",\n  \"profile_field_estagio\",\n  \"profile_field_preaula1\",\n  \"profile_field_preaula2\",\n  \"profile_field_preaula3\",\n  \"profile_field_preaula4\",\n  \"profile_field_preaula5\",\n  \"profile_field_concluiuatemodulo\",\n  \"profile_field_migracao\"\n];\n\nconst inconsistencies = [];\nconst maxLines = Math.max(sheetA.length, sheetB.length);\n\nfor (let i = 0; i < maxLines; i++) {\n  const rowA = sheetA[i]?.json || {};\n  const rowB = sheetB[i]?.json || {};\n\n  for (const field of fieldsToCompare) {\n    const valueA = (rowA[field] ?? \"\").toString().trim();\n    const valueB = (rowB[field] ?? \"\").toString().trim();\n\n    if (valueA !== valueB) {\n      inconsistencies.push({\n        linha: i + 2,\n        campo: field,\n        valor_planilha_a: valueA || \"VAZIO\",\n        valor_planilha_b: valueB || \"VAZIO\"\n      });\n    }\n  }\n}\n\nreturn inconsistencies.map(i => ({ json: i }));"
+      },
+      "id": "Compare Sheets",
+      "name": "Compare Sheets",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [700, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          { "node": "Extract XLSX A", "type": "main", "index": 0 },
+          { "node": "Extract XLSX B", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Extract XLSX A": {
+      "main": [
+        [
+          { "node": "Compare Sheets", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Extract XLSX B": {
+      "main": [
+        [
+          { "node": "Compare Sheets", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  }
+}

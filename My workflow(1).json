@@ -1,0 +1,1238 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/upload-xlsx",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -192,
+        -784
+      ],
+      "id": "b144fe18-b7f5-4afe-97ff-dd7bf3b668e2",
+      "name": "Webhook",
+      "webhookId": "8aef8711-733f-40ed-ae2c-86a16a4ceb4f"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        112,
+        -784
+      ],
+      "id": "ccc70e6f-3599-494d-aecb-ca8463718ae8",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b81bdb1d-73ed-4ded-bc05-04042becdbc2",
+              "name": "username",
+              "value": "={{ $json.username }}",
+              "type": "string"
+            },
+            {
+              "id": "61ae1d25-6490-4008-8fdd-1d34a5937863",
+              "name": "email",
+              "value": "={{ $json[\"E-mail\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "5a7b0a4e-ff25-40d1-af7b-bbd12b3c722b",
+              "name": "password",
+              "value": "={{ $json.CPF }}",
+              "type": "string"
+            },
+            {
+              "id": "34a7622a-6afd-4d00-94df-504ae7ed1689",
+              "name": "firstname",
+              "value": "={{ $json.Nome }}",
+              "type": "string"
+            },
+            {
+              "id": "b4ebfd66-2958-470f-be3c-dcd3f1f6ca41",
+              "name": "lastname",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "224e711c-1914-447b-9909-022d88c95ea3",
+              "name": "profile_field_cpf",
+              "value": "={{ $json.CPF }}",
+              "type": "string"
+            },
+            {
+              "id": "bc743857-471d-47a2-9601-e939893c6c4e",
+              "name": "profile_field_telefone",
+              "value": "={{ $json.Celular }}",
+              "type": "string"
+            },
+            {
+              "id": "130cfb0a-7c22-4750-ab2c-2419478339ec",
+              "name": "CEP",
+              "value": "={{ $json.CEP }}",
+              "type": "string"
+            },
+            {
+              "id": "0a23368f-36bd-441e-997c-1041cac6d438",
+              "name": "profile_field_mensalidades",
+              "value": "={{ $json[\"Parcela Atual do Curso\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "cff1456d-cdb6-47bd-8ed3-4e4f788c64b9",
+              "name": "Modulo_liberados",
+              "value": "={{ $json['Módulos Liberados'] }}",
+              "type": "number"
+            },
+            {
+              "id": "66aa59b5-2abc-4baa-8920-0ede3127b11e",
+              "name": "Módulos Concluidos",
+              "value": "={{ $json[\"Módulos Concluidos\"] }}",
+              "type": "number"
+            },
+            {
+              "id": "7bd5af9f-6302-45a8-b1b5-7079fcd5b516",
+              "name": "profile_field_ensinosuperior",
+              "value": "={{($json[\"Etapas Concluidas\"] || \"\").includes(\"Ensino Superior\")}}",
+              "type": "number"
+            },
+            {
+              "id": "869adc43-ff25-46a2-868f-d61f4cfabccc",
+              "name": "profile_field_estagio",
+              "value": "={{($json[\"Etapas Concluidas\"] || \"\").includes(\"Estágio supervisionado\")}}",
+              "type": "number"
+            },
+            {
+              "id": "6d5bbcc3-2fdb-4e03-be28-8b3b19339167",
+              "name": "profile_field_ta",
+              "value": "={{(($json[\"Etapas Concluidas\"] || \"\").includes(\"TA\")) }}",
+              "type": "number"
+            },
+            {
+              "id": "385a7272-4596-4248-88e1-c9a6e0154764",
+              "name": "profile_field_analisepessoal",
+              "value": "={{(($json[\"Etapas Concluidas\"] || \"\").includes(\"Análise pessoal\")) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -784
+      ],
+      "id": "ac5a037b-66e5-4990-bd36-e1f8115cf396",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "relatorio_customizado",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        784,
+        -784
+      ],
+      "id": "1088a0b8-1ac1-43cc-b47d-6888d0215671",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// =======================\n// CONFIGURAÇÕES\n// =======================\nconst totalParcelas = 30;\nconst pagas = Number( $json.Modulo_liberados || 0);\nconst maxModulos = Number($json[\"Módulos Concluidos\"] || 0);\nlet mensalidades = Number($json.profile_field_mensalidades || 0);\n\nif (mensalidades == 0){\n  mensalidades = $json.Modulo_liberados > 24 ? 30 : 24;\n}\n\n\n// =======================\n// REGRAS DE PROGRESSÃO\n// =======================\n\n// boasVindas = 1 quando boas vindas concluído OU qualquer fase\nconst boasVindas = maxModulos > 0 ? 1 : 0;\n\n// fase1 = 1 quando fase 1 já passou (fase 2, 3 ou 4)\nconst fase1 = maxModulos > 6 ? 1 : 0;\n\n// fase2 = 1 quando fase 2 já passou (fase 3 ou 4)\nconst fase2 = maxModulos > 12 ? 1 : 0;\n\n// fase3 = 1 quando fase 3 já passou (fase 4)\nconst fase3 = maxModulos > 18 ? 1 : 0;\n\n// fase4 = 1 somente quando fase 4 concluída\nconst fase4 = maxModulos >= 24 ? 1 : 0;\n\n// =======================\n// RESULTADO FINAL (ORDEM CORRETA)\n// =======================\nconst result = {\n  username: $json.username || \"\",\n  email: $json.email || \"\",\n  password: $json.profile_field_cpf || 0,\n  firstname: $json.firstname || \"\",\n  profile_field_cpf: $json.profile_field_cpf || 0,\n  profile_field_telefone: $json.profile_field_telefone || \"\",\n  CEP: $json.CEP || 0,\n  profile_field_mensalidades: mensalidades,\n};\n\n// =======================\n// PAGAMENTOS profile_field_pagto01 → profile_field_pagto30\n// =======================\nfor (let i = 1; i <= totalParcelas; i++) {\n  const key = `profile_field_pagto${String(i).padStart(2, \"0\")}`;\n  result[key] = i <= pagas ? \"Pago\" : \"\";\n}\n\n// =======================\n// CAMPOS BOOLEANOS\n// =======================\nresult.profile_field_ensinosuperior =\n  $json.profile_field_ensinosuperior \n\nresult.profile_field_analisepessoal = \n  $json.profile_field_analisepessoal\n  \nresult.profile_field_ta = \n  $json.profile_field_ta\n\nresult.profile_field_estagio = \n  $json.profile_field_estagio\n\n// =======================\n// PRÉ-AULAS / FASES\n// =======================\nresult[\"profile_field_preaula1 (boas vindas)\"] = boasVindas;\nresult[\"profile_field_preaula2(fase1)\"] = fase1;\nresult[\"profile_field_preaula3(fase2)\"] = fase2;\nresult[\"profile_field_preaula4(fase3)\"] = fase3;\nresult[\"profile_field_preaula5(fase4)\"] = fase4;\n\n// =======================\n// CONCLUÍU MÓDULOS\n// =======================\nresult.profile_field_concluiuatemodulo = maxModulos;\n\n// =======================\n// RETORNO\n// =======================\nreturn { json: result };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        -784
+      ],
+      "id": "3295acc0-8b99-4beb-8683-aa2f20fa6370",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        976,
+        -784
+      ],
+      "id": "920b197c-153e-4df2-ab6b-60ef8bb5379d",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "sheetA",
+        "options": {}
+      },
+      "id": "71c7877b-37be-45bd-8f36-c940053d8c4c",
+      "name": "Extract XLSX A",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "sheetB",
+        "options": {}
+      },
+      "id": "8da10d2b-25ae-42a4-9e52-2aa8eb211ac3",
+      "name": "Extract XLSX B",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const sheetA = $items(\"Extract XLSX A\");\nconst sheetB = $items(\"Extract XLSX B\");\n\nconst fieldsToCompare = [\n  \"username\",\"email\",\"password\",\"firstname\",\"lastname\",\n  \"profile_field_cpf\",\"profile_field_telefone\",\"CEP\",\n  \"profile_field_mensalidades\",\n  ...Array.from({ length: 30 }, (_, i) => `profile_field_pagto${String(i + 1).padStart(2, '0')}`),\n  \"profile_field_ensinosuperior\",\n  \"profile_field_analisepessoal\",\n  \"profile_field_ta\",\n  \"profile_field_estagio\",\n  \"profile_field_preaula1 (boas vindas)\",  // ← CORRIGIDO\n  \"profile_field_preaula2(fase1)\",         // ← CORRIGIDO\n  \"profile_field_preaula3(fase2)\",         // ← CORRIGIDO\n  \"profile_field_preaula4(fase3)\",         // ← CORRIGIDO\n  \"profile_field_preaula5(fase4)\",         // ← CORRIGIDO\n  \"profile_field_concluiuatemodulo\",\n  \"profile_field_migracao\"\n];\n\nconst inconsistencies = [];\nconst maxLines = Math.max(sheetA.length, sheetB.length);\n\nfor (let i = 0; i < maxLines; i++) {\n  const rowA = sheetA[i]?.json || {};\n  const rowB = sheetB[i]?.json || {};\n  const nomeDoUsuario = rowA[\"firstname\"] || \"SEM NOME\";\n  const modulosConcluidos = rowA[\"profile_field_concluiuatemodulo\"] || 0;\n\n  for (const field of fieldsToCompare) {\n    const valueA = (rowA[field] ?? \"\").toString().trim();\n    const valueB = (rowB[field] ?? \"\").toString().trim();\n\n    if (valueA !== valueB) {\n      inconsistencies.push({\n        linha: i + 2,\n        campo: field,\n        planilha_n8n: valueA || \"VAZIO\",\n        planilha_ester: valueB || \"VAZIO\",\n        modulos_concluidos: modulosConcluidos,\n        nome_do_usuario: nomeDoUsuario,\n      });\n    }\n  }\n}\n\nreturn inconsistencies.map(i => ({ json: i }));"
+      },
+      "id": "2724fc58-54ef-4794-9ff5-e41de7f15415",
+      "name": "Compare Sheets",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "compare-xlsx",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4f546d63-19e9-4d56-8d2a-86d48e2b2d86",
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        -224
+      ],
+      "webhookId": "6367d07d-cdbe-4dd4-9364-3276a37d6cb0"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "responseDataSource": "set",
+        "inputFieldName": "relatorio_customizado",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        416,
+        -224
+      ],
+      "id": "0feda7fa-31ba-4818-8237-343db7f6f71b",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "relatorio_customizado",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        -224
+      ],
+      "id": "8cba33c3-24ca-4900-acd8-49cb190295a7",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "45438cea-7400-487d-8032-0426903a199f",
+      "name": "Extract XLSX B1",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const sheet = $items(\"Extract XLSX B1\");\n\nconst result = [];\n\nsheet.forEach((item, index) => {\n  const row = item.json;\n\n  const modulosLiberados = Number(row[\"Módulos Liberados\"] || 0);\n  const modulosPagos = Number(row[\"Modulo_pagos\"] || 0);\n  const precoParcela = Number(row[\"Preço da Mensalidade\"] || 0);\n  \n\n  if (modulosLiberados !== modulosPagos) {\n    result.push({\n      linha: index + 2, // +2 por causa do header do Excel\n      nome: row[\"firstname\"] || row[\"Nome\"] || \"NÃO INFORMADO\",\n      modulos_liberados: modulosLiberados,\n      modulos_pagos: modulosPagos,\n      precoParcela: precoParcela\n    });\n  }\n});\n\nreturn result.map(r => ({ json: r }));\n"
+      },
+      "id": "3d97ecac-5dae-4549-84ba-d157ef745b8a",
+      "name": "Compare Sheets1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "compares-xlsx",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f9c4acec-5260-4fba-b11e-1a4a412cfa6a",
+      "name": "Webhook2",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        224
+      ],
+      "webhookId": "6367d07d-cdbe-4dd4-9364-3276a37d6cb0"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "responseDataSource": "set",
+        "inputFieldName": "relatorio_customizado",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        432,
+        224
+      ],
+      "id": "dcc08720-c5ea-47a9-a560-8be3c1b9c3ab",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "relatorio_customizado",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        224
+      ],
+      "id": "b1965030-7c13-466c-92e7-64add38c0606",
+      "name": "Convert to File2"
+    },
+    {
+      "parameters": {
+        "functionCode": "sheetCsv  = $items(\"SheetCsv\");\nsheetXlsx = $items(\"SheetXlsx\");\n\n// Campos a comparar\nconst fieldsToCompare = [\n    \"ensino_superior\",\n    \"analises_pessoais\",\n    \"orientacao_ta\",\n    \"estagio\",\n    \"qtd_mensalidades\",\n    \"modulos_concluidos\",\n    \"pre_aula1\", \"pre_aula2\", \"pre_aula3\", \"pre_aula4\", \"pre_aula5\",\n    ...Array.from({ length: 30 }, (_, i) => `pagamento_${String(i + 1).padStart(2, '0')}`)\n];\n\n// 1️⃣ Criar hash map do XLSX pelo email\nconst mapXlsx = {};\nfor (const item of sheetXlsx) {\n    const row = item.json;\n    if (row.email) {\n        mapXlsx[row.email.toLowerCase().trim()] = row;\n    }\n}\n\n// 2️⃣ Percorrer CSV e comparar com XLSX\nconst divergencias = [];\n\nfor (const itemCsv of sheetCsv) {\n    const rowCsv = itemCsv.json;\n    const email = (rowCsv.email || \"\").toLowerCase().trim();\n\n    const rowXlsx = mapXlsx[email];\n    if (!rowXlsx) continue; // email não existe no XLSX\n\n    for (const field of fieldsToCompare) {\n        const valueCsv = rowCsv[field] ?? null;\n        const valueXlsx = rowXlsx[field] ?? null;\n\n        // Comparação simples (já normalizado)\n        if (valueCsv !== valueXlsx) {\n            divergencias.push({\n                email: email, \n                campo: field,\n                portal: valueCsv === null ? \"VAZIO\" : valueCsv,\n                migracao: valueXlsx === null ? \"VAZIO\" : valueXlsx\n            });\n        }\n    }\n}\n\nreturn divergencias.map(d => ({ json: d }));\n"
+      },
+      "id": "0d24cb29-df97-4823-a53d-03a0c8e573bd",
+      "name": "Compare Sheets2",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "compare-portalcsv-xlsx",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "fe1576fb-76c3-4c82-be1d-5fdc3ae2b889",
+      "name": "Webhook3",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        688
+      ],
+      "webhookId": "6367d07d-cdbe-4dd4-9364-3276a37d6cb0"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "responseDataSource": "set",
+        "inputFieldName": "relatorio_customizado",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        432,
+        688
+      ],
+      "id": "dc80b098-a48d-4956-9bbb-b18c2fa5c94e",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "relatorio_customizado",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        688
+      ],
+      "id": "e4a242f4-3aa4-409e-918a-c5cb53ecfd0e",
+      "name": "Convert to File3"
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "csv",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        560
+      ],
+      "id": "a32b012d-0cde-4a57-999b-34de0d6896d7",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        752
+      ],
+      "id": "abde1294-e014-466f-bdfe-43186216b341",
+      "name": "Extract from File2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "123fade1-2ba9-4f1c-a2aa-a10aba519f15",
+              "name": "email",
+              "value": "={{ $json['e-mail'] }}",
+              "type": "string"
+            },
+            {
+              "id": "9478efb9-d3fe-41e0-ae47-ad76da620ada",
+              "name": "ensino_superior",
+              "value": "={{ $json.ensino_superior }}",
+              "type": "number"
+            },
+            {
+              "id": "13f42938-23a0-4bf8-8331-006b15849104",
+              "name": "analises_pessoais",
+              "value": "={{ $json.analises_pessoais }}",
+              "type": "number"
+            },
+            {
+              "id": "168d6eac-573d-43d2-8cf9-4c665e39ceaa",
+              "name": "orientacao_ta",
+              "value": "={{ $json.orientacao_ta }}",
+              "type": "number"
+            },
+            {
+              "id": "9bcdc742-44a5-4907-a06e-13cc96da0103",
+              "name": "estagio",
+              "value": "={{ $json.estagio }}",
+              "type": "number"
+            },
+            {
+              "id": "0bc2f56b-1288-41f8-b59a-77ad5355845c",
+              "name": "qtd_mensalidades",
+              "value": "={{ $json.qtd_mensalidades || \"VAZIO\"}}",
+              "type": "string"
+            },
+            {
+              "id": "af23df9c-66cc-412a-b9d3-c4822e7081db",
+              "name": "modulos_concluidos",
+              "value": "={{ $json.modulos_concluidos }}",
+              "type": "number"
+            },
+            {
+              "id": "d373ee32-7721-47f1-8618-aaad2e1cb635",
+              "name": "pre_aula1",
+              "value": "={{ $json.pre_aula1 }}",
+              "type": "number"
+            },
+            {
+              "id": "8230a577-4650-494d-9bc9-5d06e57d40c5",
+              "name": "pre_aula2",
+              "value": "={{ $json.pre_aula2 }}",
+              "type": "number"
+            },
+            {
+              "id": "2df23b76-7bb2-48df-bf61-80c13d2619b5",
+              "name": "pre_aula3",
+              "value": "={{ $json.pre_aula3 }}",
+              "type": "number"
+            },
+            {
+              "id": "2e84e823-6cd2-4721-ad81-044b9a3da005",
+              "name": "pre_aula4",
+              "value": "={{ $json.pre_aula4 }}",
+              "type": "number"
+            },
+            {
+              "id": "8b309e9c-6585-44be-be73-24a5f08f5a9f",
+              "name": "pre_aula5",
+              "value": "={{ $json.pre_aula5 }}",
+              "type": "number"
+            },
+            {
+              "id": "19bdad15-c47b-4563-89d2-ab5d41b04cf8",
+              "name": "pagamento_01",
+              "value": "={{ $json['Pagamento 01:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "59e4d10a-edcf-4485-9083-b83108d8ddc1",
+              "name": "pagamento_02",
+              "value": "={{ $json['Pagamento 02:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "281b7491-9838-4fd6-9887-360a70a13a89",
+              "name": "pagamento_03",
+              "value": "={{ $json['Pagamento 03:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "9e6f497b-9636-4870-839a-5a7d5c3b1c00",
+              "name": "pagamento_04",
+              "value": "={{ $json['Pagamento 04:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "198813cf-4531-4684-8b9c-14206082d382",
+              "name": "pagamento_05",
+              "value": "={{ $json['Pagamento 05:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1ca74236-4228-4beb-b05a-dcaca479fac4",
+              "name": "pagamento_06",
+              "value": "={{ $json['Pagamento 06:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "f3b69440-c570-459b-b2fb-3673e082c1fc",
+              "name": "pagamento_07",
+              "value": "={{ $json['Pagamento 07:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "2884efbc-a8ad-41c5-8f21-8910b3572ec1",
+              "name": "pagamento_08",
+              "value": "={{ $json['Pagamento 08:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "750411ef-05ae-4588-afa5-c232eda693a6",
+              "name": "pagamento_09",
+              "value": "={{ $json['Pagamento 09:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "d9d23da7-879f-49e5-bae0-577270293af6",
+              "name": "pagamento_10",
+              "value": "={{ $json['Pagamento 10:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ed82623e-93ac-48b6-a9fe-4ec1c9f15329",
+              "name": "pagamento_11",
+              "value": "={{ $json['Pagamento 11:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "9984fd7c-c683-4669-bada-443603410072",
+              "name": "pagamento_12",
+              "value": "={{ $json['Pagamento 12:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "0114098b-cfc7-4b06-88ae-4c982bf62687",
+              "name": "pagamento_13",
+              "value": "={{ $json['Pagamento 13:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "2f85fd3e-50b5-497c-9d3a-937ef11c726e",
+              "name": "pagamento_14",
+              "value": "={{ $json['Pagamento 14:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "c1c6bbeb-2085-4a9b-9009-3020bed1952d",
+              "name": "pagamento_15",
+              "value": "={{ $json['Pagamento 15:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7c4bf46a-127a-4479-82b8-7e295376fe09",
+              "name": "pagamento_16",
+              "value": "={{ $json['Pagamento 16:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "d0d82204-145b-4280-8a5c-6ec73cbd0c79",
+              "name": "pagamento_17",
+              "value": "={{ $json['Pagamento 17:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "51fc2b3f-3aaf-491f-b44b-c2ce5efc359b",
+              "name": "pagamento_18",
+              "value": "={{ $json['Pagamento 18:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "f664103a-de77-4066-9818-def1722be286",
+              "name": "pagamento_19",
+              "value": "={{ $json['Pagamento 19:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "57b76a68-a264-49bc-baf6-ae90644f9b71",
+              "name": "pagamento_20",
+              "value": "={{ $json['Pagamento 20:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "089cd7c3-706e-4bf7-ae78-5352f428ec8e",
+              "name": "pagamento_21",
+              "value": "={{ $json['Pagamento 21:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "e295f340-e762-4134-94af-5b6e206f8136",
+              "name": "pagamento_22",
+              "value": "={{ $json['Pagamento 22:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b40374b2-c160-4caa-9274-10cc1ef46a70",
+              "name": "pagamento_23",
+              "value": "={{ $json['Pagamento 23:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ce18d373-6959-417e-b75b-bc66198361b8",
+              "name": "pagamento_24",
+              "value": "={{ $json['Pagamento 24:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ca161542-3361-44a5-b3e7-1e35073148dc",
+              "name": "pagamento_25",
+              "value": "={{ $json['Pagamento 25:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b35b24ad-3eeb-488d-bf19-0a145f44d851",
+              "name": "pagamento_26",
+              "value": "={{ $json['Pagamento 26:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4e4e8034-01b3-4131-9397-a073092aa41d",
+              "name": "pagamento_27",
+              "value": "={{ $json['Pagamento 27:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a37ce2ef-cf27-4761-83a4-5fd56a6784a4",
+              "name": "pagamento_28",
+              "value": "={{ $json['Pagamento 28:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b2ca3eec-6725-4e0f-869c-3ca102cdf8c6",
+              "name": "pagamento_29",
+              "value": "={{ $json['Pagamento 29:'] }}",
+              "type": "string"
+            },
+            {
+              "id": "24b9831e-a1c0-4ffb-b2bd-b05bc23a2e8f",
+              "name": "pagamento_30",
+              "value": "={{ $json['Pagamento 30:'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -224,
+        560
+      ],
+      "id": "b526c3a4-10e9-488d-a626-bede46c577c3",
+      "name": "SheetCsv"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f598857e-e544-4110-b617-e62c87d7631a",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "b0ed13f7-7b09-4a11-bb8d-09f5a2f33156",
+              "name": "ensino_superior",
+              "value": "={{ $json.profile_field_ensinosuperior }}",
+              "type": "number"
+            },
+            {
+              "id": "175edd4d-b355-4814-ad5d-8fd8148e05b6",
+              "name": "analises_pessoais",
+              "value": "={{ $json.profile_field_analisepessoal }}",
+              "type": "number"
+            },
+            {
+              "id": "27ca5d11-368e-49fa-a7e3-65f8ebe63cda",
+              "name": "orientacao_ta",
+              "value": "={{ $json.profile_field_ta }}",
+              "type": "number"
+            },
+            {
+              "id": "6d32fe55-c182-4cee-9db8-ed46b8a43c07",
+              "name": "estagio",
+              "value": "={{ $json.profile_field_estagio }}",
+              "type": "number"
+            },
+            {
+              "id": "46bcef22-62e2-42cd-933d-e8679f60ddb2",
+              "name": "qtd_mensalidades",
+              "value": "={{ $json.profile_field_mensalidades }}",
+              "type": "string"
+            },
+            {
+              "id": "9f01b412-9c04-4688-adab-c3cf30649089",
+              "name": "modulos_concluidos",
+              "value": "={{ $json.profile_field_concluiuatemodulo }}",
+              "type": "number"
+            },
+            {
+              "id": "10ce7a4f-36cf-4e85-9741-52514d93e19b",
+              "name": "pre_aula1",
+              "value": "={{ $json['profile_field_preaula1 (boas vindas)'] }}",
+              "type": "number"
+            },
+            {
+              "id": "e7063bf7-9d0d-43be-87c9-79f3896f649a",
+              "name": "pre_aula2",
+              "value": "={{ $json['profile_field_preaula2(fase1)'] }}",
+              "type": "number"
+            },
+            {
+              "id": "98ce14b8-b738-43d3-9d28-bd7a2a31814a",
+              "name": "pre_aula3",
+              "value": "={{ $json['profile_field_preaula3(fase2)'] }}",
+              "type": "number"
+            },
+            {
+              "id": "278d30e6-f3bb-429f-8455-08467a55f626",
+              "name": "pre_aula4",
+              "value": "={{ $json['profile_field_preaula4(fase3)'] }}",
+              "type": "number"
+            },
+            {
+              "id": "b34b04f8-4a6d-4b00-9c89-ee08f4f9d3bb",
+              "name": "pre_aula5",
+              "value": "={{ $json['profile_field_preaula5(fase4)'] }}",
+              "type": "number"
+            },
+            {
+              "id": "8db42988-f74a-4f07-95e6-d3bf6bfbb2e0",
+              "name": "pagamento_01",
+              "value": "={{ $json.profile_field_pagto01 }}",
+              "type": "string"
+            },
+            {
+              "id": "fe1a3b33-65ac-41e6-858a-02e030b2b4b1",
+              "name": "pagamento_02",
+              "value": "={{ $json.profile_field_pagto02 }}",
+              "type": "string"
+            },
+            {
+              "id": "29370e85-653f-4030-a3b5-23d2068fb219",
+              "name": "pagamento_03",
+              "value": "={{ $json.profile_field_pagto03 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "98d23cfd-a472-4c72-ba4f-034b2fe77e53",
+              "name": "pagamento_04",
+              "value": "={{ $json.profile_field_pagto04 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "c63dd943-ea89-4be8-950a-e9aedd972f46",
+              "name": "pagamento_05",
+              "value": "={{ $json.profile_field_pagto05 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "74bc6f80-c99d-4291-bd0a-d805e69d559a",
+              "name": "pagamento_06",
+              "value": "={{ $json.profile_field_pagto06 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "3a4feff8-7d5f-474c-b955-7a93bf38ea34",
+              "name": "pagamento_07",
+              "value": "={{ $json.profile_field_pagto07 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "826e2f1b-1ec0-4375-b0bf-713580293151",
+              "name": "pagamento_08",
+              "value": "={{ $json.profile_field_pagto08 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "4d0a1373-9388-4e6e-9e8d-960ea2b27c6d",
+              "name": "pagamento_09",
+              "value": "={{ $json.profile_field_pagto09 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "6957e936-3250-4690-ac99-cefb3321bea4",
+              "name": "pagamento_10",
+              "value": "={{ $json.profile_field_pagto10 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "9a584777-2438-4636-abf2-1abdb5a8e74b",
+              "name": "pagamento_11",
+              "value": "={{ $json.profile_field_pagto11 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "fb38eda9-8915-4af6-8fff-3280e8e803dc",
+              "name": "pagamento_12",
+              "value": "={{ $json.profile_field_pagto12 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "86ced77d-0155-423f-a0b3-436d4474d28f",
+              "name": "pagamento_13",
+              "value": "={{ $json.profile_field_pagto13 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "7c996c7a-e056-4e5c-b3b4-eb9ff100c08e",
+              "name": "pagamento_14",
+              "value": "={{ $json.profile_field_pagto14 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "481a2fbc-0636-451c-908f-a74f2d81632a",
+              "name": "pagamento_15",
+              "value": "={{ $json.profile_field_pagto15 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "ece2f693-0737-4bbd-9c9c-30005047ca63",
+              "name": "pagamento_16",
+              "value": "={{ $json.profile_field_pagto16 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "602f2fc7-37ec-4ae1-95ce-39dfc8196d70",
+              "name": "pagamento_17",
+              "value": "={{ $json.profile_field_pagto17 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "20815363-81b2-4191-9a54-d1b9f4616a43",
+              "name": "pagamento_18",
+              "value": "={{ $json.profile_field_pagto18 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "6d60e8ea-bb19-41c2-bc87-aeab6479457c",
+              "name": "pagamento_19",
+              "value": "={{ $json.profile_field_pagto19 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "4dac8ed3-2740-4443-86ce-76ef03327e36",
+              "name": "pagamento_20",
+              "value": "={{ $json.profile_field_pagto20 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "af908c34-1fd2-4b6f-873c-85512023aa38",
+              "name": "pagamento_21",
+              "value": "={{ $json.profile_field_pagto21 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "9c9d4140-7378-4546-be56-22087b7d0456",
+              "name": "pagamento_22",
+              "value": "={{ $json.profile_field_pagto22 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "14e2982e-7331-4e0b-ac12-2b28975aa968",
+              "name": "pagamento_23",
+              "value": "={{ $json.profile_field_pagto23 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "92bb61e5-e7e6-4747-a47f-60b15604c9f5",
+              "name": "pagamento_24",
+              "value": "={{ $json.profile_field_pagto24 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "b9226e8d-5050-496b-99fa-ff1cbf58df49",
+              "name": "pagamento_25",
+              "value": "={{ $json.profile_field_pagto25 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "9bf21453-8d2d-46fb-a300-1441f1e270c7",
+              "name": "pagamento_26",
+              "value": "={{ $json.profile_field_pagto26 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "c0281e79-a1de-4576-b5a7-716fdd9e1e9b",
+              "name": "pagamento_27",
+              "value": "={{ $json.profile_field_pagto27 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "04e9cb97-1a62-4dbb-b896-caff8d212fd0",
+              "name": "pagamento_28",
+              "value": "={{ $json.profile_field_pagto28 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "878658fd-a917-4424-8996-5898265be1f1",
+              "name": "pagamento_29",
+              "value": "={{ $json.profile_field_pagto29 || null}}",
+              "type": "string"
+            },
+            {
+              "id": "47f4e79b-8cc3-4fbf-afed-72bcd8925b2b",
+              "name": "pagamento_30",
+              "value": "={{ $json.profile_field_pagto30 || null}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -224,
+        752
+      ],
+      "id": "623e8925-880b-4fd3-a4f4-abbbfffa0aea",
+      "name": "SheetXlsx"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract XLSX A": {
+      "main": [
+        [
+          {
+            "node": "Compare Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract XLSX B": {
+      "main": [
+        [
+          {
+            "node": "Compare Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Extract XLSX A",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract XLSX B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Sheets": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract XLSX B1": {
+      "main": [
+        [
+          {
+            "node": "Compare Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Sheets1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Extract XLSX B1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Compare Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Sheets2": {
+      "main": [
+        [
+          {
+            "node": "Convert to File3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook3": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract from File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "SheetCsv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File2": {
+      "main": [
+        [
+          {
+            "node": "SheetXlsx",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SheetCsv": {
+      "main": [
+        [
+          {
+            "node": "Compare Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SheetXlsx": {
+      "main": [
+        [
+          {
+            "node": "Compare Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0a63163b-068c-4231-92cc-82d27cb594a9",
+  "meta": {
+    "instanceId": "186a047cf224604d7adef8e40d76abff9979c059574ab4c10fce67e58731474f"
+  },
+  "id": "YxZKrWBlMaaS9f2eU1sFQ",
+  "tags": []
+}

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Upload XLSX para o n8n</h2>
+
+  <form
+    action="http://localhost:5678/webhook-test/compare-terapeutas-xlsx"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    <label>Planilha Terapeutas:</label><br>
+    <input type="file" name="sheetA" accept=".xlsx" required><br><br>
+
+    <label>Planilha Nome Terapeutas:</label><br>
+    <input type="file" name="sheetB" accept=".xlsx" required><br><br>
+
+    <button type="submit">Comparar</button>
+  </form>
+</body>
+</html>
